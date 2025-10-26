@@ -2,17 +2,62 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitiesList = document.getElementById("activities-list");
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
-  const messageDiv = document.getElementById("message");
+  messageDiv = document.getElementById("message");
+  
+  // Add global click handler for delete buttons
+  document.addEventListener('click', async (e) => {
+    if (e.target.closest('.delete-btn')) {
+      const btn = e.target.closest('.delete-btn');
+      const activityName = btn.dataset.activity;
+      const email = btn.dataset.email;
+      await unregisterParticipant(activityName, email);
+    }
+  });
+function formatParticipantName(email) {
+  if (!email) return "";
+  const local = email.split("@")[0];
+  return local
+    .replace(/[._\-]/g, " ")
+    .split(" ")
+    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
+}
 
-  // Helper to make a nicer display name from an email (e.g. "jane.doe@example.com" -> "Jane Doe")
-  function formatParticipantName(email) {
-    if (!email) return "";
-    const local = email.split("@")[0];
-    return local
-      .replace(/[._\-]/g, " ")
-      .split(" ")
-      .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-      .join(" ");
+let messageDiv; // Will be initialized when DOM loads
+
+// Function to unregister a participant
+async function unregisterParticipant(activityName, email) {
+    try {
+      const response = await fetch(
+        `/activities/${encodeURIComponent(activityName)}/unregister?email=${encodeURIComponent(email)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        messageDiv.textContent = result.message;
+        messageDiv.className = "success";
+        fetchActivities(); // Refresh the activities list
+      } else {
+        messageDiv.textContent = result.detail || "An error occurred";
+        messageDiv.className = "error";
+      }
+
+      messageDiv.classList.remove("hidden");
+
+      // Hide message after 5 seconds
+      setTimeout(() => {
+        messageDiv.classList.add("hidden");
+      }, 5000);
+    } catch (error) {
+      messageDiv.textContent = "Failed to unregister. Please try again.";
+      messageDiv.className = "error";
+      messageDiv.classList.remove("hidden");
+      console.error("Error unregistering:", error);
+    }
   }
 
   // Function to fetch activities from API
@@ -41,7 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="participants-title">Participants:</div>
               <ul class="participants-list">
                 ${details.participants
-                  .map(p => `<li><span class="participant-pill">${formatParticipantName(p)} <small class="participant-email">(${p})</small></span></li>`)
+                  .map(p => `<li>
+                    <span class="participant-pill">
+                      ${formatParticipantName(p)}
+                      <small class="participant-email">(${p})</small>
+                      <button class="delete-btn" data-activity="${name}" data-email="${p}">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </span>
+                  </li>`)
                   .join("")}
               </ul>
             </div>`;
@@ -95,6 +148,8 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        // Refresh the activities list to show the new participant
+        fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";

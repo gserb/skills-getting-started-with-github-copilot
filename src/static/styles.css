@@ -177,7 +177,8 @@ footer {
 
 /* Participant pill */
 .participant-pill {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   background: linear-gradient(180deg, #ffffff, #f1f5ff);
   border: 1px solid #dbe5ff;
   color: #0f2a66;
@@ -192,4 +193,34 @@ footer {
   color: #5b6b8a;
   font-size: 0.8rem;
   margin-left: 6px;
+  margin-right: 6px;
+}
+
+/* Delete button */
+.delete-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  padding: 0;
+  margin-left: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #ffd7d9;
+  color: #b02a37;
+}
+
+/* Remove default list styles */
+.participants-list {
+  list-style: none;
+  padding: 0;
 }

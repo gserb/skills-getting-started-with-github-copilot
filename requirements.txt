@@ -1,2 +1,4 @@
 fastapi
 uvicorn
+pytest
+httpx  # for async HTTP client in tests
